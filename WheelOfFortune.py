@@ -13,7 +13,7 @@
 import random
 
 goalWord = ''
-usedWords = ()
+usedWords = set()
 endRound = 0                #flag used on incorrect guesses
 round = 0                   #round number
 playerTurn = 1              
@@ -70,18 +70,21 @@ function guessVowel()
         return 1            #allows turn to continue
     else
         return 0            #ends player's turn
+'''
+def spinWheel():
+    global wedge
 
-function spinWheel()
-    choose random element from wheel
-    if element == 'special'                         #this is the $10,000 and 2 bankrupt wedge
-        roll = choose random range 1-3              #this rolls whether it's $10,000 or bankrupt
-            if roll = 3
-                return 10000
-            else
-                return -1                           #this represents bankrupt
-    else
-        return element
-
+    wedge = random.choice(wheel)
+    print(wedge)
+    if wedge == 'special':                              #this is the $10,000 and 2 bankrupt wedge
+        roll = random.choice(range(1,4))                #this rolls whether it's $10,000 or bankrupt
+        if roll == 3:
+            return 10000
+        else:
+            return -1                           #this represents bankrupt
+    else:
+        return wedge
+'''
 function displayWord()
     displayWord = ''
 
