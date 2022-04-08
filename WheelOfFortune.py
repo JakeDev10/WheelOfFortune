@@ -24,7 +24,7 @@ consonants = ('b','c','d','f','g','h','j','k','l','m','n','p',
 vowels = ('a','e','i','o','u')
 vowelCount = 0
 wheel = [-1,600,400,300,0,800,350,450,700,300,600,2500,300,600,
-'special',500,800,550,400,300,900,500,300,900]                      #0 is lose a turn and -1 is bankrupt
+'special',500,800,550,400,300,900,500,300,900]              #0 is lose a turn and -1 is bankrupt
 winnings = [0, 0, 0]
 tempWinnings = [0, 0, 0]
 
@@ -32,23 +32,23 @@ file = open('words_alpha.txt')
 words = file.read().splitlines()        #stores dictionary file in words
 file.close()
 
-
-def chooseWord():                       #chooses a random word
+#assigns a random word to goalWord, prevents duplicates
+def chooseWord():                       
     global goalWord
     global usedWords
 
     usedWords.add(goalWord)
 
     while goalWord in usedWords:
-        goalWord = words[random.randrange(0, 370103)]       #there are 370103 words in words_alpha.txt
+        goalWord = words[random.randrange(0, 370103)]       #there are 370103 words
 
-
+#gets consonant input, adds to guesses, adjusts tempWinnings
 def guessConsonant(prize):
     global tempWinnings
     global guesses
     validInput = 0
 
-    while validInput == 0:              #input validation
+    while validInput == 0:                  #input validation
         userInput = input("Guess a consonant: ")
         if userInput in guesses:
             print("That was already guessed, try again")
@@ -61,17 +61,18 @@ def guessConsonant(prize):
         tempWinnings[playerTurn - 1] += prize
         guesses.add(userInput)
         print("Correct!")
-        return 1            #allows turn to continue
+        return 1                            #allows turn to continue
     else:
         print("That's not in the word.")
-        return 0            #ends player's turn
+        return 0                            #ends player's turn
 
+#gets vowel input, adds to guesses, adjusts tempWinnings
 def guessVowel():
     global guesses
     global vowelCount
     validInput = 0
 
-    while validInput == 0:              #input validation
+    while validInput == 0:                  #input validation
         userInput = input("Guess a vowel: ")
         if userInput in guesses:
             print("That was already guessed, try again")
@@ -82,37 +83,45 @@ def guessVowel():
 
     if userInput in goalWord:
         guesses.add(userInput)
-        return 1            #allows turn to continue
+        return 1                            #allows turn to continue
     else:
         print("That's not in the word.")
-        return 0            #ends player's turn
+        return 0                            #ends player's turn
 
+#randomly selects a wedge with 1/24 probability, returns prize value
 def spinWheel():
     global wedge
 
     wedge = random.choice(wheel)
-    print(wedge)        #DEBUGGING
-    if wedge == 'special':                              #this is the $10,000 and 2 bankrupt wedge
-        roll = random.choice(range(1,4))                #this rolls whether it's $10,000 or bankrupt
+    if wedge == 'special':                  #this is the $10,000 and 2 bankrupt wedge
+        roll = random.choice(range(1,4))    #this rolls whether it's $10,000 or bankrupt
         if roll == 3:
             return 10000
         else:
-            return -1                           #this represents bankrupt
+            return -1                       #this represents bankrupt
     else:
         return wedge
 
-'''
-function displayWord()
+#prints word in progress based on guesses
+def displayWord():                              
     displayWord = ''
 
-    for i in range (0, length of goalWord)
-        if goalWord[i] in guesses
-            add goalWord[i] to displayWord
-        else
-            add '_' to displayWord
+    for i in range(0, len(goalWord)):
+        if goalWord[i] in guesses:
+            displayWord += goalWord[i]
+        else:
+            displayWord += '_'
 
-    print "The word so far: {displayWord}"
+    print(f"The word so far: {displayWord}")
 
+chooseWord()
+print(goalWord)
+guessConsonant(spinWheel())
+guessVowel()
+displayWord()
+print(tempWinnings)
+
+'''
 function guessWord()
     global winnings
 
@@ -122,7 +131,6 @@ function guessWord()
 
     if guess = goalWord
         print "Congratulations, you got it!"
-
 
 
 print """
