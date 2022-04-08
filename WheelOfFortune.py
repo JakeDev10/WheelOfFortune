@@ -14,6 +14,7 @@ import random
 
 goalWord = ''
 usedWords = set()
+guesses = set()             #stores letters guessed
 endRound = 0                #flag used on incorrect guesses
 round = 0                   #round number
 playerTurn = 1              
@@ -24,7 +25,6 @@ vowels = ('a','e','i','o','u')
 vowelCount = 0
 wheel = [-1,600,400,300,0,800,350,450,700,300,600,2500,300,600,
 'special',500,800,550,400,300,900,500,300,900]                      #0 is lose a turn and -1 is bankrupt
-guesses = ()
 winnings = [0, 0, 0]
 tempWinnings = [0, 0, 0]
 
@@ -42,40 +42,56 @@ def chooseWord():                       #chooses a random word
     while goalWord in usedWords:
         goalWord = words[random.randrange(0, 370103)]       #there are 370103 words in words_alpha.txt
 
-'''
-function guessConsonant(prize)
+
+def guessConsonant(prize):
     global tempWinnings
     global guesses
+    validInput = 0
 
-    userInput = input "Guess a consonant: "
-    ensure input is a consonant, else re-prompt for input
+    while validInput == 0:              #input validation
+        userInput = input("Guess a consonant: ")
+        if userInput in guesses:
+            print("That was already guessed, try again")
+        elif userInput in consonants:
+            validInput = 1
+        else:
+            print("That's not a lowercase consonant, try again.")
 
-    if userInput in goalWord
+    if userInput in goalWord:
         tempWinnings[playerTurn - 1] += prize
         guesses.add(userInput)
-        print "Correct!"
+        print("Correct!")
         return 1            #allows turn to continue
-    else
-        print "That's not in the word."
+    else:
+        print("That's not in the word.")
         return 0            #ends player's turn
 
-function guessVowel()
+def guessVowel():
     global guesses
     global vowelCount
-    userInput = input "Guess a vowel: "
-    ensure input is vowel and not in guesses, else re-prompt
+    validInput = 0
 
-    if userInput in goalWord
+    while validInput == 0:              #input validation
+        userInput = input("Guess a vowel: ")
+        if userInput in guesses:
+            print("That was already guessed, try again")
+        elif userInput in vowels:
+            validInput = 1
+        else:
+            print("That's not a lowercase vowel, try again.")
+
+    if userInput in goalWord:
         guesses.add(userInput)
         return 1            #allows turn to continue
-    else
+    else:
+        print("That's not in the word.")
         return 0            #ends player's turn
-'''
+
 def spinWheel():
     global wedge
 
     wedge = random.choice(wheel)
-    print(wedge)
+    print(wedge)        #DEBUGGING
     if wedge == 'special':                              #this is the $10,000 and 2 bankrupt wedge
         roll = random.choice(range(1,4))                #this rolls whether it's $10,000 or bankrupt
         if roll == 3:
@@ -84,6 +100,7 @@ def spinWheel():
             return -1                           #this represents bankrupt
     else:
         return wedge
+
 '''
 function displayWord()
     displayWord = ''
@@ -138,9 +155,12 @@ while endRound == 0
                     print "Invalid entry, try again"
                 else
                     validInput = 1
-            if menuEntry = 1 and vowelCount = 5
+            if menuEntry = 1 and tempWinnings[playerTurn - 1] < 250
+                print("You can't afford a vowel!")
+            elif menuEntry = 1 and vowelCount = 5
                 print "No more vowels available!"
             else if menuEntry = 1
+                tempWinnings[playerTurn - 1] -= 250
                 endTurn = guessVowel()
             else if menuEntry = 2
                 guessWord()
