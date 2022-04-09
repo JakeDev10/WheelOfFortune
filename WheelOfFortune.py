@@ -1,9 +1,5 @@
-
-#Wheel of Fortune Pseudocode
 #~~~STRUCTURE OF A TURN~~~
 #Spin the wheel
-#If the wheel selection is Lose a Turn, end the player's turn.
-#If the wheel selection is BANKRUPT, reset the player's bank to 0 and end their turn.
 #If the wheel selection is a dollar value, they can guess a consonant.
 #If they successfully guess a consonant, they earn the dollar value they spun (regardless of # of consonants)
 #After a successful guess, they have the opportunity to buy vowels
@@ -16,8 +12,8 @@ goalWord = ''
 usedWords = set()
 guesses = set()             #stores letters guessed
 endRound = 0                #flag used on incorrect guesses
-round = 0                   #round number
-playerTurn = 1              
+round = 1                   #round number
+playerTurn = 0             
 endTurn = 0
 consonants = ('b','c','d','f','g','h','j','k','l','m','n','p',
 'q','r','s','t','v','w','x','y','z')
@@ -61,10 +57,10 @@ def guessConsonant(prize):
         tempWinnings[playerTurn - 1] += prize
         guesses.add(userInput)
         print("Correct!")
-        return 1                            #allows turn to continue
+        return 0                            #allows turn to continue
     else:
         print("That's not in the word.")
-        return 0                            #ends player's turn
+        return 1                            #ends player's turn
 
 #gets vowel input, adds to guesses, adjusts tempWinnings
 def guessVowel():
@@ -78,15 +74,17 @@ def guessVowel():
             print("That was already guessed, try again")
         elif userInput in vowels:
             validInput = 1
+            vowelCount += 1
         else:
             print("That's not a lowercase vowel, try again.")
 
     if userInput in goalWord:
         guesses.add(userInput)
-        return 1                            #allows turn to continue
+        displayWord()
+        return 0                            #allows turn to continue
     else:
         print("That's not in the word.")
-        return 0                            #ends player's turn
+        return 1                            #ends player's turn
 
 #randomly selects a wedge with 1/24 probability, returns prize value
 def spinWheel():
@@ -114,71 +112,105 @@ def displayWord():
 
     print(f"The word so far: {displayWord}")
 
-chooseWord()
-print(goalWord)
-guessConsonant(spinWheel())
-guessVowel()
-displayWord()
-print(tempWinnings)
-
-'''
-function guessWord()
+#The player tries to solve the game. If successful, sets up for next round
+def guessWord():
     global winnings
+    global round
+    global playerTurn
+    global tempWinnings
+    global guesses
 
-    guess = input "Guess the word!"
-    ensure input is alpha, else prompt again
-    make guess lower
+    validInput = 0
 
-    if guess = goalWord
-        print "Congratulations, you got it!"
+    while validInput == 0:
+        guess = input("Guess the word! ")
+        if guess.isalpha():
+            validInput = 1
+        else:
+            print("Letters only, please.")
+            
+    if guess.lower() == goalWord:
+        print("Congratulations, you got it!")
+
+        winnings[playerTurn - 1] += tempWinnings[playerTurn - 1]        #set up next round
+        tempWinnings = [0, 0, 0]
+        guesses = ()
+        chooseWord()
+        round += 1
+        playerTurn = 1              #round 2 starts with player 2
+        #DEBUGGING
+        print(f"""Winnings so far:
+        Player 1: {winnings[0]}
+        Player 2: {winnings[1]}
+        Player 3: {winnings[2]}""")
+    else:
+        print("That's not the word.")
 
 
-print """
-==============================
-        Let's play
-W H E E L  O F  F O R T U N E!
-==============================
-"""
-#round 1 main loop
-while endRound == 0
-    print "Round 1, player {playerTurn}'s turn!"
+print("""
+================================
+          Let's play
+W H E E L   O F   F O R T U N E!
+================================
+""")
+
+chooseWord()
+#round 1 and 2 main loop
+while round < 3:
+    playerTurn = playerTurn % 3 + 1       #increments player turn by 1, wrapping at 3
+    print(f"Round {round}, player {playerTurn}'s turn!")
+    print(f"CHEATING the word is {goalWord}")
     displayWord()
     prize = spinWheel()
+    validInput = 0
 
-    if prize = -1
-        print "Bankrupt!"
-        Zero out current player's tempWinnings
-    else if prize = 0
-        print "Lose a turn!"
-    else                            #The main part of a turn
-        print "You rolled {prize}!"
-        endTurn = guessConsonant(prize)
+    if prize == -1:
+        print("Bankrupt!")
+        tempWinnings[playerTurn - 1] = 0
+    elif prize == 0:
+        print("Lose a turn!")
+    else:                            #The main part of a turn
+        print(f"You rolled {prize}!")
+        endTurn = guessConsonant(prize)     #ends turn if consonant guess is wrong
         displayWord()
         
-        while endTurn = 0           #If they guessed a consonant correctly they can play on
-            print menu              #1 to guess vowel, 2 to guess word, 3 to pass
-            while validInput = 0
-                menuEntry = input "What would you like to do? [1-3]"
-                if menuEntry is not in range(1,4)
-                    print "Invalid entry, try again"
-                else
+        while endTurn == 0:           #If they guessed a consonant correctly they can play on
+            print(f'''Player {playerTurn}, what do you want to do?
+            1. Guess a vowel
+            2. Guess the word
+            3. Pass your turn''')   
+            
+            while validInput == 0:      #input validation
+                menuEntry = input("What would you like to do? [1-3] ")
+                if menuEntry not in ['1','2','3']:
+                    print("Invalid entry, try again")
+                else:
                     validInput = 1
-            if menuEntry = 1 and tempWinnings[playerTurn - 1] < 250
+            validInput = 0
+
+            if menuEntry == '1' and tempWinnings[playerTurn - 1] < 250:
                 print("You can't afford a vowel!")
-            elif menuEntry = 1 and vowelCount = 5
-                print "No more vowels available!"
-            else if menuEntry = 1
+            elif menuEntry == '1' and vowelCount == 5:
+                print("No more vowels available!")
+            elif menuEntry == '1':
                 tempWinnings[playerTurn - 1] -= 250
                 endTurn = guessVowel()
-            else if menuEntry = 2
+                displayWord()
+            elif menuEntry == '2':
                 guessWord()
                 endTurn = 1
-    endTurn = 0
-    playerTurn = (playerTurn + 1) mod 3
+            else:
+                endTurn = 1
 
+    endTurn = 0
+    print(f"{playerTurn} turn complete, tempwinnings are {tempWinnings}")       #DEBUGGING
+    
+print("2 rounds complete!")
+'''
 for i in range(1,4)             
     add tempWinnings[i] to winnings[i]          #bank winnings
 tempWinnings = [0,0,0]
+vowelCount = 0
 playerTurn = 2                                  #starting player rotates
 guesses = empty set                             #reset guesses
 chooseWord()                                    #reset word
