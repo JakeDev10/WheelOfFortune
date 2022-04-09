@@ -1,17 +1,16 @@
 #~~~STRUCTURE OF A TURN~~~
+#Chance to guess the word
 #Spin the wheel
 #If the wheel selection is a dollar value, they can guess a consonant.
 #If they successfully guess a consonant, they earn the dollar value they spun (regardless of # of consonants)
-#After a successful guess, they have the opportunity to buy vowels
-#After buying vowels or not, they have the opportunity to solve the puzzle.
-
+#After a successful guess, they have the opportunity to buy vowels and/or solve the puzzle
+#First round starts with player 1, second round starts with player 2
 
 import random
 
 goalWord = ''
-usedWords = set()
+usedWords = set()           #used to prevent duplicate words
 guesses = set()             #stores letters guessed
-endRound = 0                #flag used on incorrect guesses
 round = 1                   #round number
 playerTurn = 0             
 endTurn = 0
@@ -53,9 +52,10 @@ def guessConsonant(prize):
         else:
             print("That's not a lowercase consonant, try again.")
 
+    guesses.add(userInput)
+
     if userInput in goalWord:
         tempWinnings[playerTurn - 1] += prize
-        guesses.add(userInput)
         print("Correct!")
         return 0                            #allows turn to continue
     else:
@@ -81,6 +81,7 @@ def guessVowel():
     if userInput in goalWord:
         guesses.add(userInput)
         displayWord()
+        print("That's right!")
         return 0                            #allows turn to continue
     else:
         print("That's not in the word.")
@@ -119,6 +120,7 @@ def guessWord():
     global playerTurn
     global tempWinnings
     global guesses
+    global vowelCount
 
     validInput = 0
 
@@ -134,15 +136,15 @@ def guessWord():
 
         winnings[playerTurn - 1] += tempWinnings[playerTurn - 1]        #set up next round
         tempWinnings = [0, 0, 0]
-        guesses = ()
+        guesses = set()
         chooseWord()
         round += 1
         playerTurn = 1              #round 2 starts with player 2
-        #DEBUGGING
+        vowelCount = 0
         print(f"""Winnings so far:
-        Player 1: {winnings[0]}
-        Player 2: {winnings[1]}
-        Player 3: {winnings[2]}""")
+        Player 1: ${winnings[0]}
+        Player 2: ${winnings[1]}
+        Player 3: ${winnings[2]}""")
     else:
         print("That's not the word.")
 
@@ -159,22 +161,38 @@ chooseWord()
 while round < 3:
     playerTurn = playerTurn % 3 + 1       #increments player turn by 1, wrapping at 3
     print(f"Round {round}, player {playerTurn}'s turn!")
-    print(f"CHEATING the word is {goalWord}")
+    print(f"CHEATING FOR DEBUG AND GRADING the word is {goalWord}")
     displayWord()
-    prize = spinWheel()
     validInput = 0
 
-    if prize == -1:
-        print("Bankrupt!")
-        tempWinnings[playerTurn - 1] = 0
-    elif prize == 0:
-        print("Lose a turn!")
-    else:                            #The main part of a turn
-        print(f"You rolled {prize}!")
-        endTurn = guessConsonant(prize)     #ends turn if consonant guess is wrong
-        displayWord()
-        
-        while endTurn == 0:           #If they guessed a consonant correctly they can play on
+    while validInput == 0:      #input validation
+        menuEntry = input("Would you like to solve the puzzle? [y/n] ")
+        if menuEntry not in ['y','n']:
+            print("Invalid entry, try again")
+        else:
+            validInput = 1
+            if menuEntry == 'y':
+                guessWord()
+                endTurn = 1
+    
+    validInput = 0
+
+    if endTurn == 0:                    #skips the turn if they correctly guessed the word
+        prize = spinWheel()
+
+        if prize == -1:                 #interprets the wheel spin, skips turn if appropriate
+            print("Bankrupt!")
+            tempWinnings[playerTurn - 1] = 0
+            endTurn = 1
+        elif prize == 0:
+            print("Lose a turn!")
+            endTurn = 1
+        else:                            
+            print(f"You rolled {prize}!")
+            endTurn = guessConsonant(prize)     #ends turn if consonant guess is wrong
+            displayWord()
+            
+        while endTurn == 0:             #If they guessed a consonant correctly they can play on
             print(f'''Player {playerTurn}, what do you want to do?
             1. Guess a vowel
             2. Guess the word
@@ -203,33 +221,59 @@ while round < 3:
                 endTurn = 1
 
     endTurn = 0
-    print(f"{playerTurn} turn complete, tempwinnings are {tempWinnings}")       #DEBUGGING
-    
-print("2 rounds complete!")
-'''
-for i in range(1,4)             
-    add tempWinnings[i] to winnings[i]          #bank winnings
-tempWinnings = [0,0,0]
-vowelCount = 0
-playerTurn = 2                                  #starting player rotates
-guesses = empty set                             #reset guesses
-chooseWord()                                    #reset word
 
-print """
-Round 1 over!
-Player 1 has {tempWinnings[0]} banked
-Player 2 has {tempWinnings[1]} banked
-Player 3 has {tempWinnings[2]} banked"""
+finalPlayer = winnings.index(max(winnings)) + 1         #finds the player with the max winnings banked
+print(f"Player {finalPlayer} wins and advances to the final round!")
 
+#Final round
+chooseWord()
+print(f"CHEATING FOR DEBUG/GRADING the word is {goalWord}")
+guesses = {'r','s','t','l','n','e'}
+print("For this round, you guess 3 consonants and 1 vowel, then you have one shot to solve the word!")
+print("r, s, t, l, n, e have been revealed")
+displayWord()
+for i in range(1,4):                    #guess 3 consonants
+    while validInput == 0:                  #input validation
+        userInput = input(f"Guess a consonant ({4-i} guesses left): ")
+        if userInput in guesses:
+            print("That was already guessed, try again")
+        elif userInput in consonants:
+            validInput = 1
+        else:
+            print("That's not a lowercase consonant, try again.")
 
-#round 2
-repeat of round 1 code block
+    guesses.add(userInput)
+    displayWord()
+    validInput = 0
 
-for i in range(1,4)             
-    add tempWinnings[i] to winnings[i]          #bank winnings
-tempWinnings = [0,0,0]
-guesses = empty set                             #reset guesses
-chooseWord()                                    #reset word
+while validInput == 0:                  #input validation
+    userInput = input("Guess a vowel: ")
+    if userInput in guesses:
+        print("That was already guessed, try again")
+    elif userInput in vowels:
+        validInput = 1
+    else:
+        print("That's not a lowercase vowel, try again.")
 
-finalPlayer = index + 1 of max winnings
-'''
+guesses.add(userInput)
+displayWord()
+validInput = 0
+
+while validInput == 0:              #The final guess
+    guess = input("Guess the word for $10,000! ")
+    if guess.isalpha():
+        validInput = 1
+    else:
+        print("Letters only, please.")
+        
+if guess.lower() == goalWord:
+    print(f"Congratulations Player {finalPlayer}, you got it!")
+    winnings[finalPlayer - 1] += 10000
+else:
+    print(f"Nope! The word was {goalWord}")
+
+print(f"""The final results:
+        Player 1: ${winnings[0]}
+        Player 2: ${winnings[1]}
+        Player 3: ${winnings[2]}
+Thanks for playing!""")
